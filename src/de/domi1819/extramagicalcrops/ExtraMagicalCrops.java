@@ -2,6 +2,10 @@ package de.domi1819.extramagicalcrops;
 
 import java.io.File;
 
+import powercrystals.minefactoryreloaded.api.FactoryRegistry;
+import powercrystals.minefactoryreloaded.api.IFactoryHarvestable;
+import powercrystals.minefactoryreloaded.api.IFactoryPlantable;
+
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -11,6 +15,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -30,10 +35,7 @@ public class ExtraMagicalCrops
     
     public static String[] ident = new String[] { "AdvAlloy", "Alumentum", "Amber", "ArcanePlants", "Blizz", "BlueTopaz", "Chimerite", "Chrome", "Cinnabar", "ConductiveIron", "Creosote", "DarkIron", "ElectricalSteel", "Enderium", "EnergeticAlloy", "Ethanol", "Iridium", "LiquidEssence", "Manganese", "MoonStone", "NetherStar", "Nitor", "Osmium", "Plutonium", "Quicksilver", "Rubber", "Saltpeter", "Scrap", "Silicon", "StainlessSteel", "Steel", "Sulfur", "SunStone", "Thaumium", "Titanium", "Tungsten", "TungstenSteel", "VibrantAlloy", "Vinteum", "Zinc" };
     public static String[] names = new String[] { "Advanced Alloy", "Alumentum", "Amber", "Arcane Plants", "Blizz", "Blue Topaz", "Chimerite", "Chrome", "Cinnabar", "Conductive Iron", "Creosote Oil", "Dark Iron", "Electrical Steel", "Enderium", "Energetic Alloy", "Ethanol", "Iridium", "Liquid Essence", "Manganese", "Moonstone", "Nether Star", "Nitor", "Osmium", "Plutonium", "Quicksilver", "Rubber", "Saltpeter", "Scrap", "Silicon", "Stainless Steel", "Steel", "Sulfur", "Sunstone", "Thaumium", "Titanium", "Tungsten", "Tungsten Steel", "Vibrant Alloy", "Vinteum", "Zinc" };
-    
-    public static int[] targetIDs = new int[42];
-    public static int[] targetMetas = new int[42];
-    
+
     public static Item itemSeeds, itemEssences, itemMisc;
     public static Block[] crops = new Block[10];
     
@@ -50,7 +52,7 @@ public class ExtraMagicalCrops
         
         for (int i = 0; i < 10; i++)
             cropsID[i] = config.get("Block IDs", "blockCrops" + i + "ID", 2430 + i).getInt(2430 + i);
-        
+                
         config.save();
         
         Configuration configMC = new Configuration(new File(event.getModConfigurationDirectory(), "magicalcrops.cfg"));
@@ -69,11 +71,15 @@ public class ExtraMagicalCrops
         
         itemSeeds = new ItemCollection(seedsID - 256, "seed");
         itemEssences = new ItemCollection(essencesID - 256, "essence");
+        itemMisc = new ItemCollection(miscID - 256, "misc");
+
+        FactoryRegistry.registerPlantable((IFactoryPlantable) itemSeeds);
         
         for (int i = 0; i < 10; i++)
         {
             crops[i] = new BlockCrops(cropsID[i], i);
             GameRegistry.registerBlock(crops[i], ItemBlockCrops.class, "crop" + i);
+            FactoryRegistry.registerHarvestable((IFactoryHarvestable) crops[i]);
         }
         
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT)
@@ -82,5 +88,12 @@ public class ExtraMagicalCrops
             LanguageRegistry.instance().addStringLocalization("tile.blockMagicCrops.0.name", "Magic Crop Block");
             LanguageRegistry.instance().addStringLocalization("itemGroup.tabEMC", "Extra Magical Crops");
         }
+    }
+    
+    @EventHandler
+    public void modsLoaded(FMLPostInitializationEvent event)
+    {
+        ModItems.fetchItems();
+        Recipes.registerRecipes();
     }
 }
